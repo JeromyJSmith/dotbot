@@ -521,22 +521,13 @@ def test_link_glob_multi_star(home, dotfiles, run_dotbot):
         assert file.read() == "cherry"
 
 
-@pytest.mark.parametrize(
-    "pattern, expect_file",
-    (
-        ("conf/*", lambda fruit: fruit),
-        ("conf/.*", lambda fruit: "." + fruit),
-        ("conf/[bc]*", lambda fruit: fruit if fruit[0] in "bc" else None),
-        ("conf/*e", lambda fruit: fruit if fruit[-1] == "e" else None),
-        ("conf/??r*", lambda fruit: fruit if fruit[2] == "r" else None),
-    ),
-)
+@pytest.mark.parametrize("pattern, expect_file", (("conf/*", lambda fruit: fruit), ("conf/.*", lambda fruit: f".{fruit}"), ("conf/[bc]*", lambda fruit: fruit if fruit[0] in "bc" else None), ("conf/*e", lambda fruit: fruit if fruit[-1] == "e" else None), ("conf/??r*", lambda fruit: fruit if fruit[2] == "r" else None)))
 def test_link_glob_patterns(pattern, expect_file, home, dotfiles, run_dotbot):
     """Verify link glob pattern matching."""
 
     fruits = ["apple", "apricot", "banana", "cherry", "currant", "cantalope"]
-    [dotfiles.write("conf/" + fruit, fruit) for fruit in fruits]
-    [dotfiles.write("conf/." + fruit, "dot-" + fruit) for fruit in fruits]
+    [dotfiles.write(f"conf/{fruit}", fruit) for fruit in fruits]
+    [dotfiles.write(f"conf/.{fruit}", f"dot-{fruit}") for fruit in fruits]
     dotfiles.write_config(
         [
             {"defaults": {"link": {"glob": True, "create": True}}},
@@ -548,13 +539,13 @@ def test_link_glob_patterns(pattern, expect_file, home, dotfiles, run_dotbot):
     for fruit in fruits:
         if expect_file(fruit) is None:
             assert not os.path.exists(os.path.join(home, "globtest", fruit))
-            assert not os.path.exists(os.path.join(home, "globtest", "." + fruit))
+            assert not os.path.exists(os.path.join(home, "globtest", f".{fruit}"))
         elif "." in expect_file(fruit):
             assert not os.path.islink(os.path.join(home, "globtest", fruit))
-            assert os.path.islink(os.path.join(home, "globtest", "." + fruit))
+            assert os.path.islink(os.path.join(home, "globtest", f".{fruit}"))
         else:  # "." not in expect_file(fruit)
             assert os.path.islink(os.path.join(home, "globtest", fruit))
-            assert not os.path.islink(os.path.join(home, "globtest", "." + fruit))
+            assert not os.path.islink(os.path.join(home, "globtest", f".{fruit}"))
 
 
 @pytest.mark.skipif(

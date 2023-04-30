@@ -28,9 +28,7 @@ def test_clean_environment_variable_expansion(home, dotfiles, run_dotbot):
     """Verify clean expands environment variables."""
 
     os.symlink(os.path.join(dotfiles.directory, "f"), os.path.join(home, ".f"))
-    variable = "$HOME"
-    if sys.platform[:5] == "win32":
-        variable = "$USERPROFILE"
+    variable = "$USERPROFILE" if sys.platform[:5] == "win32" else "$HOME"
     dotfiles.write_config([{"clean": [variable]}])
     run_dotbot()
 

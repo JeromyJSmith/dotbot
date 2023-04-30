@@ -23,7 +23,7 @@ class File(dotbot.Plugin):
             return False
         if not options.plugins[0].endswith("file.py"):
             self._log.debug(
-                "Context.options.plugins[0] is %s, expected end with file.py" % options.plugins[0]
+                f"Context.options.plugins[0] is {options.plugins[0]}, expected end with file.py"
             )
             return False
 

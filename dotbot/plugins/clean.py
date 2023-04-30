@@ -16,7 +16,7 @@ class Clean(Plugin):
 
     def handle(self, directive, data):
         if directive != self._directive:
-            raise ValueError("Clean cannot handle directive %s" % directive)
+            raise ValueError(f"Clean cannot handle directive {directive}")
         return self._process_clean(data)
 
     def _process_clean(self, targets):
@@ -41,7 +41,7 @@ class Clean(Plugin):
         a subdirectory of the base directory or if forced to clean.
         """
         if not os.path.isdir(os.path.expandvars(os.path.expanduser(target))):
-            self._log.debug("Ignoring nonexistent directory %s" % target)
+            self._log.debug(f"Ignoring nonexistent directory {target}")
             return True
         for item in os.listdir(os.path.expandvars(os.path.expanduser(target))):
             path = os.path.abspath(
@@ -57,10 +57,10 @@ class Clean(Plugin):
                 if sys.platform[:5] == "win32" and points_at.startswith("\\\\?\\"):
                     points_at = points_at[4:]
                 if self._in_directory(path, self._context.base_directory()) or force:
-                    self._log.lowinfo("Removing invalid link %s -> %s" % (path, points_at))
+                    self._log.lowinfo(f"Removing invalid link {path} -> {points_at}")
                     os.remove(path)
                 else:
-                    self._log.lowinfo("Link %s -> %s not removed." % (path, points_at))
+                    self._log.lowinfo(f"Link {path} -> {points_at} not removed.")
         return True
 
     def _in_directory(self, path, directory):

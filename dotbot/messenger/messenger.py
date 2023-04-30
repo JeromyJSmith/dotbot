@@ -17,7 +17,7 @@ class Messenger(with_metaclass(Singleton, object)):
 
     def log(self, level, message):
         if level >= self._level:
-            print("%s%s%s" % (self._color(level), message, self._reset()))
+            print(f"{self._color(level)}{message}{self._reset()}")
 
     def debug(self, message):
         self.log(Level.DEBUG, message)
@@ -50,14 +50,11 @@ class Messenger(with_metaclass(Singleton, object)):
             return Color.GREEN
         elif Level.WARNING <= level < Level.ERROR:
             return Color.MAGENTA
-        elif Level.ERROR <= level:
+        else:
             return Color.RED
 
     def _reset(self):
         """
         Get a reset color (terminal escape sequence).
         """
-        if not self._use_color:
-            return ""
-        else:
-            return Color.RESET
+        return Color.RESET if self._use_color else ""

@@ -12,7 +12,6 @@ class Context(object):
         self._base_directory = base_directory
         self._defaults = {}
         self._options = options
-        pass
 
     def set_base_directory(self, base_directory):
         self._base_directory = base_directory

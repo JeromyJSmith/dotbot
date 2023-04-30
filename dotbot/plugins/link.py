@@ -19,12 +19,12 @@ class Link(Plugin):
 
     def handle(self, directive, data):
         if directive != self._directive:
-            raise ValueError("Link cannot handle directive %s" % directive)
+            raise ValueError(f"Link cannot handle directive {directive}")
         return self._process_links(data)
 
     def _process_links(self, links):
-        success = True
         defaults = self._context.defaults().get("link", {})
+        success = True
         for destination, source in links.items():
             destination = os.path.expandvars(destination)
             relative = defaults.get("relative", False)
@@ -56,27 +56,26 @@ class Link(Plugin):
             else:
                 path = self._default_source(destination, source)
             if test is not None and not self._test_success(test):
-                self._log.lowinfo("Skipping %s" % destination)
+                self._log.lowinfo(f"Skipping {destination}")
                 continue
             path = os.path.normpath(os.path.expandvars(os.path.expanduser(path)))
             if use_glob:
                 glob_results = self._create_glob_results(path, exclude_paths)
                 if len(glob_results) == 0:
-                    self._log.warning("Globbing couldn't find anything matching " + str(path))
+                    self._log.warning(f"Globbing couldn't find anything matching {str(path)}")
                     success = False
                     continue
                 if len(glob_results) == 1 and destination[-1] == "/":
                     self._log.error("Ambiguous action requested.")
                     self._log.error(
-                        "No wildcard in glob, directory use undefined: "
-                        + destination
+                        f"No wildcard in glob, directory use undefined: {destination}"
                         + " -> "
                         + str(glob_results)
                     )
                     self._log.warning("Did you want to link the directory or into it?")
                     success = False
                     continue
-                elif len(glob_results) == 1 and destination[-1] != "/":
+                elif len(glob_results) == 1:
                     # perform a normal link operation
                     if create:
                         success &= self._create(destination)
@@ -86,7 +85,7 @@ class Link(Plugin):
                         path, destination, relative, canonical_path, ignore_missing
                     )
                 else:
-                    self._log.lowinfo("Globs from '" + path + "': " + str(glob_results))
+                    self._log.lowinfo(f"Globs from '{path}': {str(glob_results)}")
                     for glob_full_item in glob_results:
                         # Find common dirname between pattern and the item:
                         glob_dirname = os.path.dirname(os.path.commonprefix([path, glob_full_item]))
@@ -128,7 +127,7 @@ class Link(Plugin):
                     # want to remove the original (this is tested by
                     # link-force-leaves-when-nonexistent.bash)
                     success = False
-                    self._log.warning("Nonexistent source %s -> %s" % (destination, path))
+                    self._log.warning(f"Nonexistent source {destination} -> {path}")
                     continue
                 if force or relink:
                     success &= self._delete(path, destination, relative, canonical_path, force)
@@ -142,18 +141,14 @@ class Link(Plugin):
     def _test_success(self, command):
         ret = shell_command(command, cwd=self._context.base_directory())
         if ret != 0:
-            self._log.debug("Test '%s' returned false" % command)
+            self._log.debug(f"Test '{command}' returned false")
         return ret == 0
 
     def _default_source(self, destination, source):
-        if source is None:
-            basename = os.path.basename(destination)
-            if basename.startswith("."):
-                return basename[1:]
-            else:
-                return basename
-        else:
+        if source is not None:
             return source
+        basename = os.path.basename(destination)
+        return basename[1:] if basename.startswith(".") else basename
 
     def _glob(self, path):
         """
@@ -161,7 +156,7 @@ class Link(Plugin):
         """
         if sys.version_info < (3, 5) and "**" in path:
             self._log.error(
-                'Link cannot handle recursive glob ("**") for Python < version 3.5: "%s"' % path
+                f'Link cannot handle recursive glob ("**") for Python < version 3.5: "{path}"'
             )
             return []
         # call glob.glob; only python >= 3.5 supports recursive globs
@@ -170,21 +165,21 @@ class Link(Plugin):
         found = [os.path.normpath(p) for p in found]
         # if using recursive glob (`**`), filter results to return only files:
         if "**" in path and not path.endswith(str(os.sep)):
-            self._log.debug("Excluding directories from recursive glob: " + str(path))
+            self._log.debug(f"Excluding directories from recursive glob: {str(path)}")
             found = [f for f in found if os.path.isfile(f)]
         # return matched results
         return found
 
     def _create_glob_results(self, path, exclude_paths):
-        self._log.debug("Globbing with pattern: " + str(path))
+        self._log.debug(f"Globbing with pattern: {str(path)}")
         include = self._glob(path)
-        self._log.debug("Glob found : " + str(include))
+        self._log.debug(f"Glob found : {str(include)}")
         # filter out any paths matching the exclude globs:
         exclude = []
         for expat in exclude_paths:
-            self._log.debug("Excluding globs with pattern: " + str(expat))
+            self._log.debug(f"Excluding globs with pattern: {str(expat)}")
             exclude.extend(self._glob(expat))
-        self._log.debug("Excluded globs from '" + path + "': " + str(exclude))
+        self._log.debug(f"Excluded globs from '{path}': {exclude}")
         ret = set(include) - set(exclude)
         return list(ret)
 

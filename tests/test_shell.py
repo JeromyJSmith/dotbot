@@ -16,7 +16,9 @@ def test_shell_allow_stdout(capfd, dotfiles, run_dotbot):
     run_dotbot()
 
     output = capfd.readouterr()
-    assert any([line.startswith("apple") for line in output.out.splitlines()]), output
+    assert any(
+        line.startswith("apple") for line in output.out.splitlines()
+    ), output
 
 
 def test_shell_cli_verbosity_overrides_1(capfd, dotfiles, run_dotbot):
@@ -235,7 +237,7 @@ def test_shell_quiet_enabled_with_description(capfd, dotfiles, run_dotbot):
 
     stdout = capfd.readouterr().out.splitlines()
     assert not any(line.startswith("banana") for line in stdout)
-    assert not any("echo banana" in line for line in stdout)
+    assert all("echo banana" not in line for line in stdout)
     assert any(line.startswith("echoing a thing...") for line in stdout)
 
 

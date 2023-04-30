@@ -40,7 +40,7 @@ class Dispatcher(object):
                     or self._skip is not None
                     and action in self._skip
                 ) and action != "defaults":
-                    self._log.info("Skipping action %s" % action)
+                    self._log.info(f"Skipping action {action}")
                     continue
                 handled = False
                 if action == "defaults":
@@ -53,21 +53,19 @@ class Dispatcher(object):
                             local_success = plugin.handle(action, task[action])
                             if not local_success and self._exit:
                                 # The action has failed exit
-                                self._log.error("Action %s failed" % action)
+                                self._log.error(f"Action {action} failed")
                                 return False
                             success &= local_success
                             handled = True
                         except Exception as err:
-                            self._log.error(
-                                "An error was encountered while executing action %s" % action
-                            )
+                            self._log.error(f"An error was encountered while executing action {action}")
                             self._log.debug(err)
                             if self._exit:
                                 # There was an execption exit
                                 return False
                 if not handled:
                     success = False
-                    self._log.error("Action %s not handled" % action)
+                    self._log.error(f"Action {action} not handled")
                     if self._exit:
                         # Invalid action exit
                         return False
