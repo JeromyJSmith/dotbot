@@ -44,11 +44,7 @@ allowed_tempfile_internal_unlink_calls = []
 
 def wrap_function(function, function_path, arg_index, kwarg_key, root):
     def wrapper(*args, **kwargs):
-        if kwarg_key in kwargs:
-            value = kwargs[kwarg_key]
-        else:
-            value = args[arg_index]
-
+        value = kwargs[kwarg_key] if kwarg_key in kwargs else args[arg_index]
         # Python 2.7 compatibility:
         # Allow tempfile.TemporaryFile's internal unlink calls to work.
         if value in allowed_tempfile_internal_unlink_calls:
@@ -75,11 +71,7 @@ def wrap_open(root):
         wrapped = getattr(__builtin__, "open")
 
     def wrapper(*args, **kwargs):
-        if "file" in kwargs:
-            value = kwargs["file"]
-        else:
-            value = args[0]
-
+        value = kwargs["file"] if "file" in kwargs else args[0]
         mode = "r"
         if "mode" in kwargs:
             mode = kwargs["mode"]
@@ -207,11 +199,7 @@ def root(standardize_tmp):
         patches.append(mock.patch(function_path, wrapped))
 
     # open() must be separately wrapped.
-    if builtins is not None:
-        function_path = "builtins.open"
-    else:
-        # Python 2.7 compatibility
-        function_path = "__builtin__.open"
+    function_path = "builtins.open" if builtins is not None else "__builtin__.open"
     wrapped = wrap_open(current_root)
     patches.append(mock.patch(function_path, wrapped))
 
@@ -280,11 +268,7 @@ class Dotfiles(object):
         """Write a dotbot config and return the filename."""
 
         assert serializer in {"json", "yaml"}, "Only json and yaml are supported"
-        if serializer == "yaml":
-            serialize = yaml.dump
-        else:  # serializer == "json"
-            serialize = json.dumps
-
+        serialize = yaml.dump if serializer == "yaml" else json.dumps
         if path:
             msg = "The config file path must be an absolute path"
             assert path == os.path.abspath(path), msg

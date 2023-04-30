@@ -36,7 +36,7 @@ def test_find_python_executable(python_name, home, dotfiles):
 
     if python_name:
         with open(os.path.join(tmp_bin, python_name), "w") as file:
-            file.write("#!" + tmp_bin + "/sh\n")
+            file.write(f"#!{tmp_bin}" + "/sh\n")
             file.write("exit 0\n")
         os.chmod(os.path.join(tmp_bin, python_name), 0o777)
     env = dict(os.environ)

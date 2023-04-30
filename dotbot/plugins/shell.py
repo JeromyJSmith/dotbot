@@ -15,7 +15,7 @@ class Shell(Plugin):
 
     def handle(self, directive, data):
         if directive != self._directive:
-            raise ValueError("Shell cannot handle directive %s" % directive)
+            raise ValueError(f"Shell cannot handle directive {directive}")
         return self._process_commands(data)
 
     def _process_commands(self, data):
@@ -42,11 +42,11 @@ class Shell(Plugin):
                 msg = None
             if quiet:
                 if msg is not None:
-                    self._log.lowinfo("%s" % msg)
+                    self._log.lowinfo(f"{msg}")
             elif msg is None:
                 self._log.lowinfo(cmd)
             else:
-                self._log.lowinfo("%s [%s]" % (msg, cmd))
+                self._log.lowinfo(f"{msg} [{cmd}]")
             stdout = options.get("stdout", stdout)
             stderr = options.get("stderr", stderr)
             ret = shell_command(
@@ -58,7 +58,7 @@ class Shell(Plugin):
             )
             if ret != 0:
                 success = False
-                self._log.warning("Command [%s] failed" % cmd)
+                self._log.warning(f"Command [{cmd}] failed")
         if success:
             self._log.info("All commands have been executed")
         else:

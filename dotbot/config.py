@@ -14,10 +14,7 @@ class ConfigReader(object):
         try:
             _, ext = os.path.splitext(config_file_path)
             with open(config_file_path) as fin:
-                if ext == ".json":
-                    data = json.load(fin)
-                else:
-                    data = yaml.safe_load(fin)
+                data = json.load(fin) if ext == ".json" else yaml.safe_load(fin)
             return data
         except Exception as e:
             msg = string.indent_lines(str(e))

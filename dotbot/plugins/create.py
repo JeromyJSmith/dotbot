@@ -15,7 +15,7 @@ class Create(Plugin):
 
     def handle(self, directive, data):
         if directive != self._directive:
-            raise ValueError("Create cannot handle directive %s" % directive)
+            raise ValueError(f"Create cannot handle directive {directive}")
         return self._process_paths(data)
 
     def _process_paths(self, paths):
@@ -25,8 +25,7 @@ class Create(Plugin):
             path = os.path.abspath(os.path.expandvars(os.path.expanduser(key)))
             mode = defaults.get("mode", 0o777)  # same as the default for os.makedirs
             if isinstance(paths, dict):
-                options = paths[key]
-                if options:
+                if options := paths[key]:
                     mode = options.get("mode", mode)
             success &= self._create(path, mode)
         if success:
@@ -47,14 +46,14 @@ class Create(Plugin):
         if not self._exists(path):
             self._log.debug("Trying to create path %s with mode %o" % (path, mode))
             try:
-                self._log.lowinfo("Creating path %s" % path)
+                self._log.lowinfo(f"Creating path {path}")
                 os.makedirs(path, mode)
                 # On Windows, the *mode* argument to `os.makedirs()` is ignored.
                 # The mode must be set explicitly in a follow-up call.
                 os.chmod(path, mode)
             except OSError:
-                self._log.warning("Failed to create path %s" % path)
+                self._log.warning(f"Failed to create path {path}")
                 success = False
         else:
-            self._log.lowinfo("Path exists %s" % path)
+            self._log.lowinfo(f"Path exists {path}")
         return success

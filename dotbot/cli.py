@@ -96,10 +96,10 @@ def main():
                         cwd=os.path.dirname(os.path.abspath(__file__)),
                         stderr=devnull,
                     )
-                hash_msg = " (git %s)" % git_hash[:10]
+                hash_msg = f" (git {git_hash[:10]})"
             except (OSError, subprocess.CalledProcessError):
                 hash_msg = ""
-            print("Dotbot version %s%s" % (dotbot.__version__, hash_msg))
+            print(f"Dotbot version {dotbot.__version__}{hash_msg}")
             exit(0)
         if options.super_quiet:
             log.set_level(Level.WARNING)
@@ -124,10 +124,8 @@ def main():
             plugins.extend([Clean, Create, Link, Shell])
         plugin_paths = []
         for directory in plugin_directories:
-            for plugin_path in glob.glob(os.path.join(directory, "*.py")):
-                plugin_paths.append(plugin_path)
-        for plugin_path in options.plugins:
-            plugin_paths.append(plugin_path)
+            plugin_paths.extend(iter(glob.glob(os.path.join(directory, "*.py"))))
+        plugin_paths.extend(iter(options.plugins))
         for plugin_path in plugin_paths:
             abspath = os.path.abspath(plugin_path)
             plugins.extend(module.load(abspath))
@@ -154,13 +152,12 @@ def main():
             options=options,
             plugins=plugins,
         )
-        success = dispatcher.dispatch(tasks)
-        if success:
+        if success := dispatcher.dispatch(tasks):
             log.info("\n==> All tasks executed successfully")
         else:
             raise DispatchError("\n==> Some tasks were not executed successfully")
     except (ReadingError, DispatchError) as e:
-        log.error("%s" % e)
+        log.error(f"{e}")
         exit(1)
     except KeyboardInterrupt:
         log.error("\n==> Operation aborted")
